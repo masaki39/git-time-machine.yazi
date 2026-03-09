@@ -21,7 +21,7 @@ local function build_fzf_cmd(file_q)
 		file_q
 	)
 	local preview = string.format(
-		"git diff {1} HEAD -- %s | delta --paging=never",
+		"git diff {1} -- %s | delta --paging=never",
 		file_q
 	)
 	return git_log

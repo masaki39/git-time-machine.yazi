@@ -42,6 +42,35 @@ function M:entry()
 		return
 	end
 
+	local git_check = Command("git")
+		:arg("rev-parse")
+		:arg("--git-dir")
+		:cwd(state.dir)
+		:stdout(Command.PIPED)
+		:stderr(Command.PIPED)
+		:output()
+
+	if not git_check or not git_check.status.success then
+		ya.notify({ title = "git-time-machine.yazi", content = "Not a git repository", level = "warn", timeout = 3 })
+		return
+	end
+
+	local log_check = Command("git")
+		:arg("log")
+		:arg("--follow")
+		:arg("--oneline")
+		:arg("--")
+		:arg(state.file)
+		:cwd(state.dir)
+		:stdout(Command.PIPED)
+		:stderr(Command.PIPED)
+		:output()
+
+	if not log_check or log_check.stdout == "" then
+		ya.notify({ title = "git-time-machine.yazi", content = "No git history for this file", level = "warn", timeout = 3 })
+		return
+	end
+
 	local file_q = shell_quote(state.file)
 	local cmd    = build_fzf_cmd(file_q)
 

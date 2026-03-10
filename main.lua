@@ -15,14 +15,15 @@ local function shell_quote(s)
 	return "'" .. s:gsub("'", "'\\''") .. "'"
 end
 
-local function build_fzf_cmd(file_q)
+local function build_fzf_cmd(file_q, file_abs)
 	local git_log = string.format(
-		"git log --format='%%h%%x09%%ad %%h %%s' --date=format:'%%Y-%%m-%%d %%H:%%M' --follow -- %s",
+		"git log --follow --name-only --format='%%h%%x09%%ad %%h %%s' --date=format:'%%Y-%%m-%%d %%H:%%M' -- %s"
+			.. " | awk 'NF > 0 { if (commit == \"\") { commit = $0 } else { print commit \"\\t\" $0; commit = \"\" } }'",
 		file_q
 	)
 	local preview = string.format(
-		"git diff {1} -- %s | delta --paging=never",
-		file_q
+		"git diff {1}:'{3}' %s | delta --paging=never",
+		file_abs
 	)
 	return git_log
 		.. " | fzf"
@@ -71,8 +72,9 @@ function M:entry()
 		return
 	end
 
-	local file_q = shell_quote(state.file)
-	local cmd    = build_fzf_cmd(file_q)
+	local file_q   = shell_quote(state.file)
+	local file_abs = shell_quote(state.file)
+	local cmd      = build_fzf_cmd(file_q, file_abs)
 
 	local permit = ui.hide()
 	local child, spawn_err = Command("sh")
@@ -103,9 +105,14 @@ function M:entry()
 	local selected = output.stdout:gsub("\n$", "")
 	if selected == "" then return end
 
-	local hash = selected:match("^([^\t]+)")
+	local hash      = selected:match("^([^\t]+)")
+	local hist_path = selected:match("^[^\t]+\t[^\t]+\t([^\t]+)")
 	if not hash or hash == "" then
 		ya.notify({ title = "git-time-machine.yazi", content = "Could not parse commit hash", level = "error", timeout = 3 })
+		return
+	end
+	if not hist_path or hist_path == "" then
+		ya.notify({ title = "git-time-machine.yazi", content = "Could not parse historical path", level = "error", timeout = 3 })
 		return
 	end
 
@@ -119,11 +126,15 @@ function M:entry()
 	})
 	if not yes then return end
 
-	local result, git_err = Command("git")
-		:arg("restore")
-		:arg("--source=" .. hash)
-		:arg("--")
-		:arg(state.file)
+	local sh_cmd = string.format(
+		"git show %s:%s > %s",
+		hash,
+		shell_quote(hist_path),
+		shell_quote(state.file)
+	)
+	local result, git_err = Command("sh")
+		:arg("-c")
+		:arg(sh_cmd)
 		:cwd(state.dir)
 		:stdout(Command.PIPED)
 		:stderr(Command.PIPED)

@@ -71,18 +71,37 @@ local function write_temp_file(entries)
 	return path, nil
 end
 
+local function has_delta()
+	local result = Command("delta"):arg("--version"):stdout(Command.PIPED):stderr(Command.PIPED):output()
+	return result and result.status.success
+end
+
 local function build_fzf_cmd(temp_file, file_abs)
 	local preview
-	if is_windows() then
-		preview = string.format(
-			"git diff {1}:{3} %s | delta --paging=never",
-			shell_quote(file_abs)
-		)
+	if has_delta() then
+		if is_windows() then
+			preview = string.format(
+				"git diff {1}:{3} %s | delta --paging=never",
+				shell_quote(file_abs)
+			)
+		else
+			preview = string.format(
+				"git diff {1}:'{3}' %s | delta --paging=never",
+				shell_quote(file_abs)
+			)
+		end
 	else
-		preview = string.format(
-			"git diff {1}:'{3}' %s | delta --paging=never",
-			shell_quote(file_abs)
-		)
+		if is_windows() then
+			preview = string.format(
+				"git diff {1}:{3} %s",
+				shell_quote(file_abs)
+			)
+		else
+			preview = string.format(
+				"git diff {1}:'{3}' %s",
+				shell_quote(file_abs)
+			)
+		end
 	end
 
 	local input_cmd

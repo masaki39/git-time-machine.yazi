@@ -93,12 +93,12 @@ local function build_fzf_cmd(temp_file, file_abs)
 	else
 		if is_windows() then
 			preview = string.format(
-				"git diff {1}:{3} %s",
+				"git diff --color=always {1}:{3} %s",
 				shell_quote(file_abs)
 			)
 		else
 			preview = string.format(
-				"git diff {1}:'{3}' %s",
+				"git diff --color=always {1}:'{3}' %s",
 				shell_quote(file_abs)
 			)
 		end

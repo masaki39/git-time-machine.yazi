@@ -12,7 +12,7 @@ A [Yazi](https://github.com/sxyazi/yazi) plugin to restore files from git histor
 ## Features
 
 - Interactive commit selection with fzf
-- Live diff preview powered by delta (falls back to plain `git diff` if delta is not installed)
+- Live diff preview powered by delta (falls back to `git diff --color=always` if delta is not installed)
 - Follows renamed files (`git log --follow`)
 - Works with any file in a git repository
 - Confirmation dialog before overwriting
@@ -22,7 +22,7 @@ A [Yazi](https://github.com/sxyazi/yazi) plugin to restore files from git histor
 
 - [git](https://git-scm.com/)
 - [fzf](https://github.com/junegunn/fzf)
-- [delta](https://github.com/dandavison/delta) (optional — enables syntax-highlighted diff preview)
+- [delta](https://github.com/dandavison/delta) (optional — enables richer syntax-highlighted diff preview; falls back to `git diff --color=always`)
 
 ## Installation
 

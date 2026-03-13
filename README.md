@@ -64,7 +64,7 @@ desc = "Git time machine (restore file from history)"
 flowchart TD
     A[Trigger plugin on hovered file] --> B{Valid file\nin git repo?}
     B -- No --> Z[Notify & exit]
-    B -- Yes --> C[Fetch commit history\ngit log --follow]
+    B -- Yes --> C[Fetch commit history<br/>git log --follow]
     C --> D{Has history?}
     D -- No --> Z
     D -- Yes --> E[Launch fzf\nwith diff preview]
@@ -72,7 +72,7 @@ flowchart TD
     F -- Esc --> G[Abort]
     F -- Enter --> H{Confirm overwrite?}
     H -- No --> G
-    H -- Yes --> I[Restore file\ngit show HASH:PATH]
+    H -- Yes --> I[Restore file<br/>git show HASH:PATH]
     I --> J[Notify: Restored]
 ```
 

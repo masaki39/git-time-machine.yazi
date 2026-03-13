@@ -7,7 +7,7 @@ A [Yazi](https://github.com/sxyazi/yazi) plugin to restore files from git histor
 
 ## Demo
 
-![demo](assets/demo.gif)
+![demo](https://github.com/masaki39/git-time-machine.yazi/releases/download/v0.1.0/demo.gif)
 
 ## Features
 

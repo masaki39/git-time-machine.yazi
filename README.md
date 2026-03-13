@@ -62,12 +62,12 @@ desc = "Git time machine (restore file from history)"
 
 ```mermaid
 flowchart TD
-    A[Trigger plugin on hovered file] --> B{Valid file\nin git repo?}
+    A[Trigger plugin on hovered file] --> B{Valid file<br/>in git repo?}
     B -- No --> Z[Notify & exit]
     B -- Yes --> C[Fetch commit history<br/>git log --follow]
     C --> D{Has history?}
     D -- No --> Z
-    D -- Yes --> E[Launch fzf\nwith diff preview]
+    D -- Yes --> E[Launch fzf<br/>with diff preview]
     E --> F{User action}
     F -- Esc --> G[Abort]
     F -- Enter --> H{Confirm overwrite?}

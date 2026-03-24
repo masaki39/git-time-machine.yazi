@@ -54,7 +54,7 @@ local function fetch_log_entries(file_path, dir)
 	return entries
 end
 
-local function write_temp_file(entries)
+local function write_temp_file(entries, file_path)
 	local path
 	if is_windows() then
 		local tmpdir = os.getenv("TEMP") or os.getenv("TMP") or "C:\\Windows\\Temp"
@@ -65,7 +65,7 @@ local function write_temp_file(entries)
 	local f, err = io.open(path, "w")
 	if not f then return nil, err end
 	for _, entry in ipairs(entries) do
-		f:write(entry .. "\n")
+		f:write(entry .. "\t" .. file_path .. "\n")
 	end
 	f:close()
 	return path, nil
@@ -76,32 +76,12 @@ local function has_delta()
 	return result and result.status.success
 end
 
-local function build_fzf_cmd(temp_file, file_abs)
+local function build_fzf_cmd(temp_file)
 	local preview
 	if has_delta() then
-		if is_windows() then
-			preview = string.format(
-				"git diff {1}:{3} %s | delta --paging=never",
-				shell_quote(file_abs)
-			)
-		else
-			preview = string.format(
-				"git diff {1}:'{3}' %s | delta --paging=never",
-				shell_quote(file_abs)
-			)
-		end
+		preview = 'git diff {1}:{3} {4} | delta --paging=never'
 	else
-		if is_windows() then
-			preview = string.format(
-				"git diff --color=always {1}:{3} %s",
-				shell_quote(file_abs)
-			)
-		else
-			preview = string.format(
-				"git diff --color=always {1}:'{3}' %s",
-				shell_quote(file_abs)
-			)
-		end
+		preview = 'git diff --color=always {1}:{3} {4}'
 	end
 
 	local input_cmd
@@ -147,13 +127,13 @@ function M:entry()
 		return
 	end
 
-	local temp_file, temp_err = write_temp_file(entries)
+	local temp_file, temp_err = write_temp_file(entries, state.file)
 	if not temp_file then
 		ya.notify({ title = "git-time-machine.yazi", content = "Temp file error: " .. tostring(temp_err), level = "error", timeout = 3 })
 		return
 	end
 
-	local cmd = build_fzf_cmd(temp_file, state.file)
+	local cmd = build_fzf_cmd(temp_file)
 
 	local permit = ui.hide()
 	local shell_cmd, shell_flag
